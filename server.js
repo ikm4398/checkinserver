@@ -50,7 +50,6 @@ app.use("/", attendanceRoutes);
 setInterval(async () => {
   try {
     await fetchAndProcessAttendance();
-    console.log("HI");
   } catch (error) {
     console.error("Error in attendance processing interval:", error);
   }
