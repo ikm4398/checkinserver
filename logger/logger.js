@@ -1,8 +1,14 @@
 const fs = require("fs");
 const moment = require("moment");
 
-const logFilePath = "./logs/device-logs.txt";
-const attendanceLogFilePath = "./logs/attendance-logs.txt";
+const logDirectory = "./logs";
+const logFilePath = `${logDirectory}/device-logs.txt`;
+const attendanceLogFilePath = `${logDirectory}/attendance-logs.txt`;
+
+// Ensure the logs directory exists
+if (!fs.existsSync(logDirectory)) {
+  fs.mkdirSync(logDirectory, { recursive: true });
+}
 
 // Function to write logs to a file
 const writeLog = (message, logFile = logFilePath) => {
