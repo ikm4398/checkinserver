@@ -21,20 +21,36 @@ if (!fs.existsSync(EMPLOYEE_FILE_PATH)) {
 }
 
 let lastEmployeeData = JSON.parse(fs.readFileSync(EMPLOYEE_FILE_PATH, "utf-8"));
+async function fetchAllEmployees(authToken) {
+  const limit = 100;
+  let offset = 0;
+  let allEmployees = [];
+
+  while (true) {
+    const url = `${API_URL}/api/resource/Employee?fields=["employee", "employee_name", "status", "attendance_device_id"]&limit_start=${offset}&limit_page_length=${limit}`;
+
+    const response = await axios.get(url, {
+      headers: { Cookie: authToken },
+    });
+
+    const employees = response.data.data;
+    allEmployees = allEmployees.concat(employees);
+
+    if (employees.length < limit) break; // No more data to fetch
+
+    offset += limit;
+  }
+
+  return allEmployees;
+}
 
 async function fetchAndLogEmployees() {
   const { authToken } = await login();
 
-  const url = `${API_URL}/api/resource/Employee?fields=["employee", "employee_name", "status", "attendance_device_id"]`;
-
-  //console.log("Fetching employee data from:", url);
-  //console.log("token", authToken);
-
+  console.log("Fetching all employee data...");
   try {
-    const response = await axios.get(url, { headers: { Cookie: authToken } });
-    //console.log("Employee data fetched successfully.");
-
-    const employees = response.data.data;
+    const employees = await fetchAllEmployees(authToken);
+    console.log(`Fetched ${employees.length} employees.`);
 
     const newEmployeeData = employees
       .filter((emp) => emp.status === "Active" && emp.attendance_device_id)
@@ -44,11 +60,8 @@ async function fetchAndLogEmployees() {
         device_id: parseInt(emp.attendance_device_id),
       }));
 
-    //console.log(
-    //`Filtered ${newEmployeeData.length} active employees with a device ID.`
-    //);
+    console.log(`Filtered ${newEmployeeData.length} active employees with a device ID.`);
 
-    // Only update if data changed
     if (JSON.stringify(lastEmployeeData) !== JSON.stringify(newEmployeeData)) {
       console.log("Employee data has changed. Updating file...");
 
@@ -59,19 +72,15 @@ async function fetchAndLogEmployees() {
       lastEmployeeData = newEmployeeData;
 
       console.log("Employee data updated");
-
       return { updated: true, data: newEmployeeData };
     }
 
-    //console.log("No changes in employee data.");
     return { updated: false, data: lastEmployeeData };
   } catch (error) {
-    console.error(
-      "Error fetching employees:",
-      error.response?.data || error.message
-    );
+    console.error("Error fetching employees:", error.response?.data || error.message);
     throw error;
   }
 }
+
 
 module.exports = { fetchAndLogEmployees };
