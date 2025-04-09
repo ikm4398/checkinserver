@@ -1,8 +1,13 @@
-// module.exports = router;
 const express = require("express");
 const { writeLog, attendanceLogFilePath } = require("../logger/logger");
 const { saveAttendance } = require("../services/saveAttendance");
+const moment = require("moment");
 const router = express.Router();
+
+
+//add
+// Cutoff date for logs
+const cutoffDate = moment("2025-03-13 20:00:00", "YYYY-MM-DD HH:mm:ss");
 
 // Handle POST /iclock/cdata (Device sending attendance logs)
 router.post("/iclock/cdata", async (req, res) => {
@@ -24,6 +29,18 @@ router.post("/iclock/cdata", async (req, res) => {
           if (logLine.trim() !== "") {
             const logFields = logLine.split("\t");
             if (logFields.length >= 2) {
+              //add 
+              const logTimestamp = moment(logFields[1], "YYYY-MM-DD HH:mm:ss");
+
+              // Skip logs before the cutoff date
+              if (logTimestamp.isBefore(cutoffDate)) {
+                writeLog(
+                  `Skipped log before cutoff date: ${logTimestamp}`,
+                  attendanceLogFilePath
+                );
+                continue;
+              }
+
               const attendanceLog = {
                 device,
                 employeeId: logFields[0],

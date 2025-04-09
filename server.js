@@ -37,6 +37,8 @@ app.use((req, res, next) => {
     method: req.method,
     url: req.url,
   };
+
+  // Log request (optional: writeLog(JSON.stringify(logData)))
   next();
 });
 
@@ -44,7 +46,7 @@ app.use((req, res, next) => {
 app.use("/", deviceRoutes);
 app.use("/", attendanceRoutes);
 
-// chech checkin data in every 5 sec
+// Check check-in data every 5 seconds
 setInterval(async () => {
   try {
     await fetchAndProcessAttendance();
@@ -53,27 +55,49 @@ setInterval(async () => {
   }
 }, 5000); // 5 sec in milliseconds
 
-//check employee data in 1 day
+// Check employee data every 24 hours
 setInterval(async () => {
   try {
     await fetchAndLogEmployees();
   } catch (error) {
-    console.error("Error in attendance processing interval:", error);
+    console.error("Error in employee fetch interval:", error);
   }
 }, 24 * 60 * 60 * 1000); // 1 day in milliseconds
+
+//add device status 
+// setInterval(() => {
+//   const now = Date.now();
+//   const timeSinceLastActivity = global.lastDeviceActivity
+//     ? (now - global.lastDeviceActivity) / 1000
+//     : null;
+
+//   const statusData = {
+//     lastActivityTimestamp: global.lastDeviceActivity
+//       ? moment(global.lastDeviceActivity).format("YYYY-MM-DD HH:mm:ss")
+//       : null,
+//     timeSinceLastActivity: timeSinceLastActivity
+//       ? `${timeSinceLastActivity.toFixed(2)} seconds ago`
+//       : "Device has not yet connected.",
+//   };
+
+//   // Log to console
+//   console.log("Device Status:", statusData);
+
+//   // Or log to file
+//   // writeLog(`Device Status: ${JSON.stringify(statusData)}`);
+// }, 10000); // Every 5 seconds
 
 // Start the server
 app.listen(PORT, IP_ADDRESS, async () => {
   writeLog(`Server is running on http://${IP_ADDRESS}:${PORT}`);
   try {
-    //login to erp
     await login();
     console.log("Logged in successfully");
-    // fetch employee data
+
     await fetchAndLogEmployees();
     console.log("Initial employee data loaded");
-    //fetch checkin data from database
-    await fetchAndProcessAttendance();
+
+    //await fetchAndProcessAttendance();
   } catch (error) {
     console.error("Initialization error:", error);
     process.exit(1);
