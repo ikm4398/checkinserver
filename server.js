@@ -38,7 +38,7 @@ app.use((req, res, next) => {
     url: req.url,
   };
 
-  // Log request (optional: writeLog(JSON.stringify(logData)))
+  //writeLog(JSON.stringify(logData))
   next();
 });
 
@@ -46,14 +46,35 @@ app.use((req, res, next) => {
 app.use("/", deviceRoutes);
 app.use("/", attendanceRoutes);
 
-// Check check-in data every 5 seconds
-setInterval(async () => {
-  try {
-    await fetchAndProcessAttendance();
-  } catch (error) {
-    console.error("Error in attendance processing interval:", error);
-  }
-}, 5000); // 5 sec in milliseconds
+//device status monitoring
+setInterval(() => {
+  const now = Date.now();
+  const timeSinceLastActivity = global.lastDeviceActivity
+    ? (now - global.lastDeviceActivity) / 1000
+    : null;
+
+  const statusData = {
+    lastActivityTimestamp: global.lastDeviceActivity
+      ? moment(global.lastDeviceActivity).format("YYYY-MM-DD HH:mm:ss")
+      : null,
+    timeSinceLastActivity: timeSinceLastActivity,
+    status:
+      timeSinceLastActivity === null
+        ? "Device has not connected yet"
+        : timeSinceLastActivity <= 30
+        ? "active"
+        : "inactive",
+  };
+  console.log(
+    `Device Status: ${statusData.status} | Last activity: ${
+      statusData.lastActivityTimestamp || "N/A"
+    } | ${
+      timeSinceLastActivity
+        ? timeSinceLastActivity.toFixed(2) + "s ago"
+        : "Never"
+    }`
+  );
+}, 5000);
 
 // Check employee data every 24 hours
 setInterval(async () => {
@@ -62,30 +83,16 @@ setInterval(async () => {
   } catch (error) {
     console.error("Error in employee fetch interval:", error);
   }
-}, 24 * 60 * 60 * 1000); // 1 day in milliseconds
+}, 24 * 60 * 60 * 1000);
 
-//add device status 
-// setInterval(() => {
-//   const now = Date.now();
-//   const timeSinceLastActivity = global.lastDeviceActivity
-//     ? (now - global.lastDeviceActivity) / 1000
-//     : null;
-
-//   const statusData = {
-//     lastActivityTimestamp: global.lastDeviceActivity
-//       ? moment(global.lastDeviceActivity).format("YYYY-MM-DD HH:mm:ss")
-//       : null,
-//     timeSinceLastActivity: timeSinceLastActivity
-//       ? `${timeSinceLastActivity.toFixed(2)} seconds ago`
-//       : "Device has not yet connected.",
-//   };
-
-//   // Log to console
-//   console.log("Device Status:", statusData);
-
-//   // Or log to file
-//   // writeLog(`Device Status: ${JSON.stringify(statusData)}`);
-// }, 10000); // Every 5 seconds
+// Check check-in data every 5 seconds
+setInterval(async () => {
+  try {
+    await fetchAndProcessAttendance();
+  } catch (error) {
+    console.error("Error in attendance processing interval:", error);
+  }
+}, 5000);
 
 // Start the server
 app.listen(PORT, IP_ADDRESS, async () => {
@@ -97,7 +104,7 @@ app.listen(PORT, IP_ADDRESS, async () => {
     await fetchAndLogEmployees();
     console.log("Initial employee data loaded");
 
-    //await fetchAndProcessAttendance();
+    await fetchAndProcessAttendance();
   } catch (error) {
     console.error("Initialization error:", error);
     process.exit(1);
