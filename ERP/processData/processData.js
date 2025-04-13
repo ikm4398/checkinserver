@@ -16,7 +16,7 @@ const processLogs = (log) => {
   const timestamp = new Date(log.timestamp);
 
   // Use timestamp directly without adjusting it to the local timezone
-  const formattedTime = log.timestamp.slice(0, 19); // Use log's original timestamp format (e.g., 2025-04-08 17:25:16)
+  const formattedTime = log.timestamp.slice(0, 19);
 
   // Array of day names for custom day conversion
   const dayNames = [
@@ -33,12 +33,13 @@ const processLogs = (log) => {
   // Return processed log data with employee info, formatted time, and day
   return {
     employee: employee.employee,
-    log_type: log.status === "0" ? "IN" : "OUT", // Log type based on status
+    log_type: log.status === "0" ? "IN" : "OUT",
     device_id: log.employee_id.toString(),
-    time: formattedTime, // Use the exact timestamp from the log without timezone adjustment
-    day: customDay, // Custom day name based on timestamp
-    latitude: "26.4547555", // Default latitude
-    longitude: "87.2727071", // Default longitude
+    time: formattedTime,
+    day: customDay,
+    //Default location Data(if not require remove it)
+    latitude: "26.4547555",
+    longitude: "87.2727071",
   };
 };
 
