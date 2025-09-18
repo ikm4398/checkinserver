@@ -36,7 +36,7 @@ const processLogs = (log) => {
     log_type: log.status === "0" ? "IN" : "OUT",
     device_id: log.employee_id.toString(),
     time: formattedTime,
-    day: customDay,
+    custom_day: customDay,
     //Default location Data(if not require remove it)
     latitude: "26.4547555",
     longitude: "87.2727071",

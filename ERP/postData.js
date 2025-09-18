@@ -1,3 +1,4 @@
+
 const axios = require("axios");
 const { login } = require("./login");
 const API_URL = process.env.API_URL;
@@ -7,7 +8,12 @@ async function checkExistingCheckin(employee, timestamp) {
   const url = `${API_URL}/api/resource/Employee Checkin?filters=[["employee", "=", "${employee}"], ["time", "=", "${timestamp}"]]`;
 
   try {
-    const response = await axios.get(url, { headers: { Cookie: authToken } });
+    const response = await axios.get(url, {
+      headers: {
+        Cookie: authToken,
+        Expect: null, // Disable Expect header
+      },
+    });
     return response.data.data.length > 0;
   } catch (error) {
     console.error("Error checking existing check-in:", error.message);
@@ -19,14 +25,17 @@ async function postData(data) {
   const { authToken } = await login();
   const { employee, time } = data;
 
-  // Check if check-in for the employee and time already exists
   if (await checkExistingCheckin(employee, time)) {
     console.log("Check-in already exists, skipping.");
     return;
   }
 
   const url = `${API_URL}/api/resource/Employee Checkin`;
-  const headers = { "Content-Type": "application/json", Cookie: authToken };
+  const headers = {
+    "Content-Type": "application/json",
+    Cookie: authToken,
+    Expect: null, // Disable Expect header
+  };
 
   try {
     console.log(`Posting data: ${JSON.stringify(data)}`);

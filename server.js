@@ -46,35 +46,35 @@ app.use((req, res, next) => {
 app.use("/", deviceRoutes);
 app.use("/", attendanceRoutes);
 
-//device status monitoring
-setInterval(() => {
-  const now = Date.now();
-  const timeSinceLastActivity = global.lastDeviceActivity
-    ? (now - global.lastDeviceActivity) / 1000
-    : null;
+// //device status monitoring
+// setInterval(() => {
+//   const now = Date.now();
+//   const timeSinceLastActivity = global.lastDeviceActivity
+//     ? (now - global.lastDeviceActivity) / 1000
+//     : null;
 
-  const statusData = {
-    lastActivityTimestamp: global.lastDeviceActivity
-      ? moment(global.lastDeviceActivity).format("YYYY-MM-DD HH:mm:ss")
-      : null,
-    timeSinceLastActivity: timeSinceLastActivity,
-    status:
-      timeSinceLastActivity === null
-        ? "Device has not connected yet"
-        : timeSinceLastActivity <= 30
-        ? "active"
-        : "inactive",
-  };
-  console.log(
-    `Device Status: ${statusData.status} | Last activity: ${
-      statusData.lastActivityTimestamp || "N/A"
-    } | ${
-      timeSinceLastActivity
-        ? timeSinceLastActivity.toFixed(2) + "s ago"
-        : "Never"
-    }`
-  );
-}, 5000);
+//   const statusData = {
+//     lastActivityTimestamp: global.lastDeviceActivity
+//       ? moment(global.lastDeviceActivity).format("YYYY-MM-DD HH:mm:ss")
+//       : null,
+//     timeSinceLastActivity: timeSinceLastActivity,
+//     status:
+//       timeSinceLastActivity === null
+//         ? "Device has not connected yet"
+//         : timeSinceLastActivity <= 30
+//         ? "active"
+//         : "inactive",
+//   };
+//   console.log(
+//     `Device Status: ${statusData.status} | Last activity: ${
+//       statusData.lastActivityTimestamp || "N/A"
+//     } | ${
+//       timeSinceLastActivity
+//         ? timeSinceLastActivity.toFixed(2) + "s ago"
+//         : "Never"
+//     }`
+//   );
+// }, 5000);
 
 // Check employee data every 24 hours
 setInterval(async () => {

@@ -1,11 +1,17 @@
 const { fetchAttendance } = require("../../services/fetchAttendance");
 const processLogs = require("./processData");
 const { postData } = require("../postData");
+const { isErpOnline } = require("../erpStatus");
 
 async function fetchAndProcessAttendance() {
   try {
-    //console.log("Checking for new attendance logs...");
+    // Check if ERP system is online before proceeding
+    if (!(await isErpOnline())) {
+      console.log("ERP system is offline. Skipping processing.");
+      return;
+    }
 
+    //console.log("Checking for new attendance logs...");
     const logs = await fetchAttendance();
 
     if (logs.length === 0) {
