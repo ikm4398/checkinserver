@@ -11,7 +11,11 @@ const processLogs = (log) => {
     console.warn(`No employee found for device_id: ${log.employee_id}`);
     return null;
   }
-
+  // Validate status (must be 0 or 1)
+  if (log.status !== "0" && log.status !== "1") {
+    console.error(`Invalid status: ${log.status}. Expected "0" or "1".`);
+    return null;
+  }
   // Convert timestamp without adjusting for timezone
   const timestamp = new Date(log.timestamp);
 
